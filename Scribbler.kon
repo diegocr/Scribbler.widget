@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<widget author="Reinier Kaper & Diego Casorran" company="" copyright="2006 - Reinier Kaper, 2010 - Diego Casorran" debug="off" defaultTracking="opacity" image="Resources/Images/icon.png" minimumVersion="2.1" option="" requiredPlatform="" version="5.0">
+<!--
+	Scribbler 5.0
+	Copy it, paste it, love it!
+	
+	Scribbler < 4.0 Copyright (c)2006 Reinier Kaper
+	Scribbler > 4.0 Copyright (c)2010 Diego Casorran
+	Please don't (re-)use my code & images without asking me first.
+-->
+	<window title="Scribbler" name="MainWindow" width="220" height="90" hOffset="10" vOffset="10" shadow="0" visible="0">
+	
+  	<!-- All the icons above the bar -->
+  	<image src="Resources/Images/show_all.png" name="ShowAll" hOffset="6" vOffset="8" tooltip="Show all/none" onMouseDown="toggleShowAll();" />
+  	<image src="Resources/Images/help.png" name="HelpMe" hOffset="22" vOffset="8" tooltip="Help" onMouseDown="showHelp();" />
+  	<image src="Resources/Images/clear.png" name="ClearAll" hOffset="54" vOffset="8" tooltip="Clear the whole scribbling list" onMouseDown="clearAll();" />
+  	<image src="Resources/Images/manadd.png" name="ManualAdd" hOffset="90" vOffset="8" tooltip="Manually add a scribbling" onMouseDown="addScrib('',1);" />
+  	<image src="Resources/Images/snap.png" name="SnapShot" hOffset="131" vOffset="8" tooltip="Define a snapshot" onMouseDown="saveSnapShot();" />
+  	<image src="Resources/Images/restore.png" name="SnapRestore" hOffset="167" vOffset="8" tooltip="Restore your snapshot" onMouseDown="restoreSnapShot();" />
+  	
+  	<!-- The bar itself -->
+  	<image src="Resources/Images/bar4.png" name="BarImage" vOffset="20" onDragDrop="handleDragDrop();" onDragEnter="handleDragEnter();" onDragExit="handleDragExit();" />
+  	
+  	<!-- The text elements on the widget -->
+  	<text name="NumActiveScrib" data="0" font="Arial" size="24" style="bold" color="#FFFFFF" hOffset="11" vOffset="46" />
+  	<text name="NumMaxScrib" data="/ 0" font="Arial" size="10" style="bold" color="#FFFFFF" hOffset="28" vOffset="36" tooltip="Click to adjust the maximum allowed scribblings" onMouseDown="setMaxScribs();" />
+  	<text name="ModeText" data="copy / open" font="Arial" size="10" style="bold" color="#FFFFFF" hOffset="12" vOffset="56" tooltip="Copy and open mode" />
+  	<text name="AutoAddText" data="auto-add: on" font="Arial" size="10" style="bold" color="#FFFFFF" hOffset="209" vOffset="35" alignment="right" tooltip="Click to toggle auto-add" onMouseDown="toggleAutoAdd();" />
+  	<text name="CheckDupText" data="check dups: on" font="Arial" size="10" style="bold" color="#FFFFFF" hOffset="209" vOffset="45" alignment="right" tooltip="Click to toggle duplicate check" onMouseDown="toggleCheckDup();" />
+  	<text name="CheckUrlText" data="check specials: on" font="Arial" size="10" style="bold" color="#FFFFFF" hOffset="209" vOffset="56" alignment="right" tooltip="Click to toggle the checking for URL's and files" onMouseDown="toggleCheckUrl();" />
+  	
+  	<!-- The slash image overlays -->
+  	<image src="Resources/Images/slash.png" name="SlashImage1" hOffset="194" vOffset="29" opacity="0" />
+  	<image src="Resources/Images/slash.png" name="SlashImage2" hOffset="194" vOffset="39" opacity="0" />
+  	<image src="Resources/Images/slash.png" name="SlashImage3" hOffset="194" vOffset="49" opacity="0" />
+  	
+  	<!-- The mode image -->
+  	<image src="Resources/Images/pm_text.png" alignment="center" name="ModeImage" hOffset="110" vOffset="70" opacity="0" />
+	
+	</window>
+	
+	<!-- The preferences -->
+	<preference defaultValue="1|0:0|20|0|1|1|0|0|0|0|0|0|0|0|0" hidden="true" name="PrefValues" type="text" />
+	<preference defaultValue="" hidden="true" name="ScribEntries" type="text" />
+	<preference defaultValue="" hidden="true" name="PinEntries" type="text" />
+	<preference defaultValue="" hidden="true" name="SavedEntries" type="text" />
+	
+	<preferenceGroup icon="Resources/Images/general_icon.png" name="GeneralGroup" order="0" title="General" />
+	<preference defaultValue="0" description="Choose what to do when the maximum number of scribblings is reached." group="GeneralGroup" name="ActionOnMax" title="When max is reached:" type="popup">
+	 <option>Do nothing</option>
+	 <optionValue>0</optionValue>
+	 <option>Add the scribbling, increase the max</option>
+	 <optionValue>1</optionValue>
+	 <option>Add the scribbling, drop the oldest</option>
+	 <optionValue>2</optionValue>
+	 <option>Prompt me</option>
+	 <optionValue>3</optionValue>
+	</preference>
+	<preference defaultValue="0" description="Check this to add scribblings to the top of the list, instead of the bottom." group="GeneralGroup" name="ReverseAdd" title="Add scribblings in reverse" type="checkbox" />
+	<preference defaultValue="1" description="Check this to enable a background for scribblings." group="GeneralGroup" name="UseBG" title="Enable backgrounds" type="checkbox" />
+	<preference defaultValue="255" description="Define the opacity of the background for scribblings." group="GeneralGroup" maxLength="255" minLength="0" name="BgOpacity" title="Background opacity:" type="slider">
+	 <tickLabel>0%</tickLabel>
+	 <tickLabel>opacity</tickLabel>
+	 <tickLabel>100%</tickLabel>
+	</preference>
+	<preference defaultValue="0" description="Check this to scroll scribblings which are too large when you hover over them." group="GeneralGroup" name="ScrollScribs" title="Enable scrolling" type="checkbox" />
+	<preference defaultValue="0" description="Check this to hide the widget controls when Scribbler is not active." group="GeneralGroup" name="HideControls" title="Hide controls" type="checkbox" />
+	<preference defaultValue="5" description="Amount of seconds to display tooltips for scribblings." group="GeneralGroup" maxLength="20" minLength="1" name="TooltipTime" title="Tooltip display:" type="slider" ticks="20">
+	 <tickLabel>1</tickLabel>
+	 <tickLabel>seconds</tickLabel>
+	 <tickLabel>20</tickLabel>
+	</preference>
+	
+	<preferenceGroup icon="Resources/Images/special_icon.png" name="SpecialGroup" order="0" title="Specials" />
+	<preference defaultValue="shift+F5" description="Define the hotkey sequence to bring Scribbler to the foreground." group="SpecialGroup" name="HotKeySeq" title="Popup widget hotkey:" type="hotkey" />
+	<preference defaultValue="1" description="Check this to move Scribbler to the center of the screen when it is brought to the foreground." group="SpecialGroup" name="PopUpCenter" title="Popup and center:" type="checkbox" />
+	<preference defaultValue="shift+F6" description="Define the hotkey sequence to popup the active scribbling." group="SpecialGroup" name="HotKeySeq2" title="Popup scribbling hotkey:" type="hotkey" />
+	<preference defaultValue="0" description="The area on the (primary) screen where the popup will occur." group="SpecialGroup" name="PopUpArea" title="Popup scribbling area:" type="popup">
+	 <option>Top</option>
+	 <optionValue>0</optionValue>
+	 <option>Top-Left</option>
+	 <optionValue>1</optionValue>
+	 <option>Left</option>
+	 <optionValue>2</optionValue>
+	 <option>Bottom-Left</option>
+	 <optionValue>3</optionValue>
+	 <option>Bottom</option>
+	 <optionValue>4</optionValue>
+	 <option>Bottom-Right</option>
+	 <optionValue>5</optionValue>
+	 <option>Right</option>
+	 <optionValue>6</optionValue>
+	 <option>Top-Right</option>
+	 <optionValue>7</optionValue>
+	</preference>
+	<preference defaultValue="Subject text" description="Define the default subject message for e-mails." group="SpecialGroup" name="DefaultSubject" title="E-mail subject:" type="text" />
+	<preference defaultValue="0" description="Use the icons from files instead of the default Scribbler icons." group="SpecialGroup" name="UseIcons" title="Use file icons" type="checkbox" />
+	<preference defaultValue="16" description="Define the size of the custom icons in pixels (16x16 is recommended)" maxLength="16" minLength="1" group="SpecialGroup" name="SizeIcons" title="Icon size:" type="slider" ticks="16">
+	 <tickLabel>1x1</tickLabel>
+	 <tickLabel>4x4</tickLabel>
+	 <tickLabel>8x8</tickLabel>
+	 <tickLabel>12x12</tickLabel>
+	 <tickLabel>16x16</tickLabel>
+	</preference>
+	
+	<preferenceGroup icon="Resources/Images/font_icon.png" name="FontGroup" order="0" title="Fonts" />
+	<preference defaultValue="Arial Bold" description="The default font for the interface (this will not work on localized systems, due to a bug in Y!WE)." group="FontGroup" name="InterfaceFont" title="Interface font:" type="font" />
+	<preference defaultValue="#FFFFFF" description="The font color for the interface." group="FontGroup" name="InterfaceFontColor" title="Interface font color:" type="color" />
+	<preference defaultValue="Arial Bold" description="The default font for the scribblings (this will not work on localized systems, due to a bug in Y!WE)." group="FontGroup" name="ScribFont" title="Scribbling font:" type="font" />
+	<preference defaultValue="#FFFFFF" description="The font color for the scribblings." group="FontGroup" name="ScribFontColor" title="Scribbling font color:" type="color" />
+	<preference defaultValue="#FF0000" description="The font color for scribblings when you hover over them." group="FontGroup" name="HoverColor" title="Scribbling hover color:" type="color" />
+	<preference defaultValue="#0000FF" description="The font color for the active scribbling." group="FontGroup" name="ActiveColor" title="Scribbling active color:" type="color" />
+	<preference defaultValue="1" description="Enable shadows for scribblings." group="FontGroup" name="UseShadows" title="Use shadows" type="checkbox" />
+	<preference defaultValue="#000000" description="The shadow color for the scribblings." group="FontGroup" name="ShadowColor" title="Scribbling shadow color:" type="color" />
+	
+	<preferenceGroup icon="Resources/Images/alert_icon.png" name="AlertGroup" order="0" title="Alerts" />
+	<preference defaultValue="1" description="Check this to display an alert when defining a new snapshot." group="AlertGroup" name="AlertSnap" title="Snapshot alert" type="checkbox" />
+	<preference defaultValue="1" description="Check this to display an alert when clearing the whole scribbling list." group="AlertGroup" name="AlertClear" title="Clear list alert (recommended)" type="checkbox" />
+	
+	<!-- All the actions -->
+	<action trigger="onLoad" file="main.js" />
+	<action trigger="onPreferencesChanged">
+	<!--
+	if (preferenceArray[0] == 1) {
+	 clearList();
+	}
+	getPreferenceArray();
+	if (hideControls == 0) {
+    showControl();
+  }
+	tintScrib();
+	getHotKey();
+	-->
+	</action>
+	
+	<action trigger="onKeyDown">
+	<!--
+	var keyPressed = system.event.key;
+	if (isPressed == 0) {
+  	if (keyPressed == "z") {
+      toggleMode(1);
+      isPressed = 1;
+    }
+    if (keyPressed == "x") {
+      toggleMode(2);
+      isPressed = 2;
+    }
+    if (keyPressed == "c") {
+      toggleMode(3);
+      isPressed = 3;
+    }
+    if (keyPressed == "v") {
+      toggleMode(4);
+      isPressed = 4;
+    }
+  }
+  -->
+	</action>
+	<action trigger="onKeyUp">
+	<!--
+	var keyPressed = system.event.key;
+	if (isPressed > 0) {
+  	if ((keyPressed == "z") || (keyPressed == "x") || (keyPressed == "c") || (keyPressed == "v") || (keyPressed == "b")) {
+      toggleMode(0);
+    }
+    isPressed = 0;
+  }
+  -->
+	</action>
+	<action trigger="onLoseFocus">
+	<!--
+  if (hideControls == 1) {
+    hideControl();
+  }
+  -->
+	</action>
+	<action trigger="onGainFocus">
+	<!--
+  if (hideControls == 1) {
+    showControl();
+  }
+  -->
+	</action>
+	
+	<!-- And the about-box -->
+	<about-box image="Resources/Images/about.png">
+<!-- 	 <about-text data="E-mail the author" font="Arial" size="11" hOffset="102" vOffset="166" color="#FFFFFF" url="mailto:rp.kaper@wanadoo.nl?subject=Scribbler 3.0"> -->
+	 <about-text data="- E-mail The Author" font="Arial" size="11" hOffset="102" vOffset="166" color="#FFFFFF" url="mailto:dcasorran@gmail.com?subject=Scribbler-5.0">
+	   <shadow color="#000000" hOffset="1" vOffset="1" opacity="255" />
+	 </about-text>
+<!-- 	 <about-text data="More widgets by Reinier Kaper" font="Arial" size="11" hOffset="102" vOffset="180" color="#FFFFFF" url="http://widgets.yahoo.com/gallery/index.php?author=985"> -->
+	 <about-text data="- Support This Widget!" font="Arial" size="11" hOffset="102" vOffset="180" color="#FFFFFF" url="http://goo.gl/Q6ZiF">
+	   <shadow color="#000000" hOffset="1" vOffset="1" opacity="255" />
+	 </about-text>
+	</about-box>
+	
+</widget>
